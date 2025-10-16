@@ -1,5 +1,5 @@
 (function() {
-  console.log("RCCAI 1.1");
+  console.log("RCCAI 1.0");
   'use strict';
   if (window.rccAIChatbotFunctions) {
     return;
@@ -1366,6 +1366,22 @@
   
   updateWelcomeMessage();
   
+  function processMarkdown(text) {
+    // Primeiro, processar listas com negrito: * **texto:**
+    text = text.replace(/^\* \*\*([^*]+)\*\*/gm, '• <strong>$1</strong>');
+    
+    // Processar negrito restante: **texto**
+    text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    
+    // Processar itálico: *texto*
+    text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    
+    // Processar listas simples que sobraram: * texto
+    text = text.replace(/^\* /gm, '• ');
+    
+    return text;
+  }
+  
   function processLinks(text) {
     text = text.replace(/(https?:\/\/[^\s<>"{}|\\^`[\]]+)/gi, function(match) {
       let cleanUrl = match.replace(/[.,;:!?)\]]+$/, '');
@@ -1417,6 +1433,7 @@
     if (isUser) {
       contentDiv.textContent = text;
     } else {
+      text = processMarkdown(text);
       text = processLinks(text);
       contentDiv.innerHTML = text.replace(/\n/g, '<br>');
     }
@@ -1457,6 +1474,7 @@
     messageDiv.appendChild(contentDiv);
     messagesDiv.appendChild(messageDiv);
     if (sender === 'ai') {
+      text = processMarkdown(text);
       text = processLinks(text);
     }
     const processedText = text.replace(/\n/g, '<br>');
