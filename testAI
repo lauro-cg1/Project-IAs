@@ -639,7 +639,7 @@
   
   const chatbotHTML = `
     <div id="rccai-chatbot-toggle">
-      <img src="https://revotechbr.com/rcc/imagens/brasao-rcc.png" alt="RCC AI">
+      <img src="https://i.imgur.com/hBHOf8e.png" alt="RCC AI">
     </div>
     <div id="rccai-chatbot-tooltip">Clique para conversar com a IA da RCC!</div>
     <div id="rccai-chatbot-container">
