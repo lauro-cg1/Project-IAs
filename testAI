@@ -1503,7 +1503,7 @@
     const username = getCookie('user_field_1_7') || currentUsername;
     
     if (!username) {
-      showNotification('⚠️ Você precisa estar logado para usar o chatbot!', 'warning', 4000);
+      addMessage('⚠️ Você precisa estar logado para usar o chatbot!', false);
       return;
     }
     
@@ -1540,25 +1540,33 @@
       
       clearTimeout(timeoutId);
       
-      if (!response.ok) {
-        if (response.status === 429) {
-          throw new Error('Você está fazendo perguntas muito rápido. Aguarde um momento.');
-        } else if (response.status === 403) {
-          throw new Error('Você foi bloqueado temporariamente. Entre em contato com um Administrador se achar que isso é um erro.');
-        }
-        throw new Error(`Erro na resposta: ${response.status}`);
-      }
-      
       const data = await response.json();
       
       if (typingIndicator) {
         typingIndicator.style.display = 'none';
       }
       
+      // Verificar se há um erro no JSON (mesmo com status 403, 429, etc)
+      if (data.error) {
+        addMessage(`❌ ${data.error}`, false);
+        return;
+      }
+      
+      if (!response.ok) {
+        if (response.status === 429) {
+          addMessage('❌ Você está fazendo perguntas muito rápido. Aguarde um momento.', false);
+        } else if (response.status === 403) {
+          addMessage('❌ Você foi bloqueado temporariamente. Entre em contato com um Administrador se achar que isso é um erro.', false);
+        } else {
+          addMessage(`❌ Erro na resposta: ${response.status}`, false);
+        }
+        return;
+      }
+      
       if (data.answer) {
         await typeMessage('ai', data.answer);
       } else {
-        throw new Error('Resposta inválida do servidor');
+        addMessage('❌ Resposta inválida do servidor', false);
       }
       
     } catch (error) {
@@ -1568,17 +1576,15 @@
       
       if (error.name === 'AbortError') {
         if (retryCount < API_CONFIG.RETRY_ATTEMPTS) {
-          showNotification(`⏱️ Tempo esgotado. Tentando novamente... (${retryCount + 1}/${API_CONFIG.RETRY_ATTEMPTS})`, 'warning', 3000);
+          addMessage(`⏱️ Tempo esgotado. Tentando novamente... (${retryCount + 1}/${API_CONFIG.RETRY_ATTEMPTS})`, false);
           await new Promise(resolve => setTimeout(resolve, API_CONFIG.RETRY_DELAY));
           return sendMessage(retryCount + 1);
         } else {
-          showNotification('❌ Tempo limite excedido. Tente novamente mais tarde.', 'error', 5000);
-          addMessage('⚠️ Desculpe, ocorreu um erro. Tente novamente.', false);
+          addMessage('❌ Tempo limite excedido. Tente novamente mais tarde.', false);
         }
       } else {
         const errorMessage = error.message || 'Erro desconhecido ao processar sua mensagem';
-        showNotification(`❌ ${errorMessage}`, 'error', 5000);
-        addMessage('⚠️ Desculpe, ocorreu um erro. Tente novamente.', false);
+        addMessage(`❌ ${errorMessage}`, false);
       }
     } finally {
       isWaitingResponse = false;
