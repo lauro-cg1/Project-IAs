@@ -1,5 +1,5 @@
 (function() {
-  console.log("RCCAI 1.1");
+  console.log("RCCAI 1.0");
   'use strict';
   if (window.rccAIChatbotFunctions) {
     return;
@@ -1502,7 +1502,7 @@
     
     const username = getCookie('user_field_1_7') || currentUsername;
     
-    if (!username) {
+    if (!username || username === 'Anonymous' || username.toLowerCase() === 'anonymous') {
       addMessage('⚠️ Você precisa estar logado para usar o chatbot!', false);
       return;
     }
