@@ -501,19 +501,595 @@
     #rccai-chatbot-tooltip::after {
       content: '';
       position: absolute;
-      bottom: -6px;
-      left: 20px;
-      width: 12px;
-      height: 12px;
-      background: rgba(255, 140, 0, 0.95);
-      border-right: 1px solid rgba(255, 215, 0, 0.5);
-      border-bottom: 1px solid rgba(255, 215, 0, 0.5);
-      transform: rotate(45deg);
+      top: 100%;
+      left: 25px;
+      border: 8px solid transparent;
+      border-top-color: rgba(255, 140, 0, 0.95);
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
     }
 
-    #rccai-chatbot-toggle:hover + #rccai-chatbot-tooltip {
+    #rccai-chatbot-tooltip.show {
       opacity: 1;
       transform: translateY(0) scale(1);
+    }
+
+    #rccai-chatbot-tooltip.fade-out {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.9);
+    }
+
+    .rccai-typing {
+      display: none;
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, 
+        rgba(0, 0, 0, 0.9) 0%, 
+        rgba(26, 26, 26, 0.8) 100%);
+      color: rgba(255, 215, 0, 0.9);
+      padding: 8px 16px;
+      border-radius: 16px;
+      font-size: 11px;
+      font-style: italic;
+      text-align: center;
+      backdrop-filter: blur(20px) saturate(150%);
+      -webkit-backdrop-filter: blur(20px) saturate(150%);
+      border: 1px solid rgba(255, 193, 0, 0.2);
+      box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 193, 0, 0.2);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+      white-space: nowrap;
+      z-index: 1000;
+      animation: fadeInUp 0.3s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    .rccai-typing-dots {
+      display: inline-block;
+    }
+
+    .rccai-typing-dots span {
+      display: inline-block;
+      animation: typing-dots 1.5s infinite;
+    }
+
+    .rccai-typing-dots span:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .rccai-typing-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .rccai-typing-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typing-dots {
+      0%, 60%, 100% {
+        opacity: 0.3;
+        transform: translateY(0);
+      }
+      30% {
+        opacity: 1;
+        transform: translateY(-4px);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    #rccai-chatbot-credits {
+      padding: 12px 24px;
+      text-align: center;
+      background: linear-gradient(135deg, 
+        rgba(0, 0, 0, 0.9) 0%, 
+        rgba(26, 26, 26, 0.8) 100%);
+      border-top: 1px solid rgba(255, 193, 0, 0.1);
+      color: rgba(255, 193, 0, 0.6);
+      font-size: 11px;
+      font-weight: 500;
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border-radius: 0 0 32px 32px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      letter-spacing: 0.5px;
+    }
+
+    #rccai-chatbot-credits .developer {
+      color: rgba(255, 149, 0, 0.9);
+      font-weight: 700;
+      text-shadow: 0 0 10px rgba(255, 149, 0, 0.3);
+    }
+    @media (max-width: 1200px) and (min-width: 769px) {
+      #rccai-chatbot-container {
+        width: 380px;
+        height: 580px;
+      }
+    }
+    @media (max-width: 1024px) and (min-width: 769px) and (orientation: landscape) {
+      #rccai-chatbot-container {
+        width: 360px;
+        height: calc(100vh - 60px);
+        max-height: 500px;
+      }
+    }
+    @media (max-width: 768px) and (min-width: 481px) {
+      #rccai-chatbot-container {
+        width: calc(100vw - 40px);
+        height: calc(100vh - 80px);
+        bottom: 20px;
+        left: 20px;
+        border-radius: 28px;
+        max-width: 400px;
+        max-height: 600px;
+      }
+      
+      #rccai-chatbot-header {
+        border-radius: 28px 28px 0 0;
+        padding: 16px 20px;
+      }
+      
+      #rccai-chatbot-close {
+        width: 28px;
+        height: 28px;
+        font-size: 1.2em;
+      }
+      
+      #rccai-chatbot-messages {
+        padding: 18px;
+      }
+      
+      #rccai-chatbot-input-area {
+        border-radius: 0 0 28px 28px;
+        padding: 16px 18px;
+        gap: 12px;
+      }
+      
+      #rccai-chatbot-input {
+        padding: 14px 16px;
+        font-size: 14px;
+      }
+      
+      #rccai-chatbot-send {
+        padding: 14px 20px;
+        min-width: 75px;
+        font-size: 14px;
+      }
+      
+      #rccai-chatbot-credits {
+        border-radius: 0 0 28px 28px;
+        padding: 10px 18px;
+        font-size: 11px;
+      }
+      
+      #rccai-chatbot-toggle {
+        bottom: 20px;
+        left: 20px;
+        width: 56px;
+        height: 56px;
+      }
+      
+      #rccai-chatbot-toggle img {
+        width: 32px;
+        height: 32px;
+      }
+      
+      .rccai-message-content {
+        max-width: 85%;
+        padding: 14px 18px;
+        font-size: 14px;
+      }
+      
+      #rccai-chatbot-tooltip {
+        bottom: 85px;
+        left: 20px;
+        max-width: 180px;
+        font-size: 12px;
+        padding: 10px 14px;
+      }
+    }
+    @media (max-width: 480px) and (min-width: 361px) {
+      #rccai-chatbot-container {
+        width: calc(100vw - 20px);
+        height: calc(100vh - 40px);
+        bottom: 10px;
+        left: 10px;
+        border-radius: 24px;
+      }
+      
+      #rccai-chatbot-header {
+        border-radius: 24px 24px 0 0;
+        padding: 14px 18px;
+      }
+      
+      #rccai-chatbot-close {
+        width: 26px;
+        height: 26px;
+        font-size: 1.1em;
+      }
+      
+      #rccai-chatbot-messages {
+        padding: 16px;
+      }
+      
+      #rccai-chatbot-input-area {
+        border-radius: 0 0 24px 24px;
+        padding: 14px 16px;
+        gap: 10px;
+      }
+      
+      #rccai-chatbot-input {
+        padding: 12px 14px;
+        border-radius: 18px;
+        font-size: 13px;
+        min-height: 20px;
+        max-height: 80px;
+      }
+      
+      #rccai-chatbot-send {
+        padding: 12px 16px;
+        border-radius: 18px;
+        min-width: 65px;
+        font-size: 13px;
+      }
+      
+      #rccai-chatbot-credits {
+        border-radius: 0 0 24px 24px;
+        padding: 8px 16px;
+        font-size: 10px;
+      }
+      
+      #rccai-chatbot-toggle {
+        bottom: 15px;
+        left: 15px;
+        width: 50px;
+        height: 50px;
+      }
+      
+      #rccai-chatbot-toggle img {
+        width: 28px;
+        height: 28px;
+      }
+      
+      .rccai-message-content {
+        max-width: 88%;
+        padding: 12px 16px;
+        font-size: 13px;
+        border-radius: 20px;
+      }
+      
+      #rccai-chatbot-tooltip {
+        bottom: 75px;
+        left: 15px;
+        max-width: 160px;
+        font-size: 11px;
+        padding: 8px 12px;
+      }
+      
+      #rccai-chatbot-tooltip::after {
+        left: 20px;
+        border-width: 6px;
+      }
+    }
+    @media (max-width: 360px) {
+      #rccai-chatbot-container {
+        width: calc(100vw - 16px);
+        height: calc(100vh - 32px);
+        bottom: 8px;
+        left: 8px;
+        border-radius: 20px;
+      }
+      
+      #rccai-chatbot-header {
+        border-radius: 20px 20px 0 0;
+        padding: 12px 16px;
+      }
+      
+      #rccai-chatbot-close {
+        width: 24px;
+        height: 24px;
+        font-size: 1em;
+      }
+      
+      #rccai-chatbot-messages {
+        padding: 14px;
+      }
+      
+      #rccai-chatbot-input-area {
+        border-radius: 0 0 20px 20px;
+        padding: 12px 14px;
+        gap: 8px;
+      }
+      
+      #rccai-chatbot-input {
+        padding: 10px 12px;
+        border-radius: 16px;
+        font-size: 12px;
+        min-height: 18px;
+        max-height: 60px;
+      }
+      
+      #rccai-chatbot-send {
+        padding: 10px 14px;
+        border-radius: 16px;
+        min-width: 55px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      
+      #rccai-chatbot-credits {
+        border-radius: 0 0 20px 20px;
+        padding: 6px 14px;
+        font-size: 9px;
+      }
+      
+      #rccai-chatbot-toggle {
+        bottom: 12px;
+        left: 12px;
+        width: 46px;
+        height: 46px;
+      }
+      
+      #rccai-chatbot-toggle img {
+        width: 26px;
+        height: 26px;
+      }
+      
+      .rccai-message-content {
+        max-width: 90%;
+        padding: 10px 14px;
+        font-size: 12px;
+        line-height: 1.5;
+        border-radius: 18px;
+      }
+      
+      .rccai-message.user .rccai-message-content {
+        border-bottom-right-radius: 6px;
+      }
+      
+      .rccai-message.ai .rccai-message-content {
+        border-bottom-left-radius: 6px;
+      }
+      
+      #rccai-chatbot-tooltip {
+        bottom: 68px;
+        left: 12px;
+        max-width: 130px;
+        font-size: 10px;
+        padding: 6px 10px;
+      }
+      
+      #rccai-chatbot-tooltip::after {
+        left: 18px;
+        border-width: 5px;
+      }
+    }
+    @media (max-width: 320px) {
+      #rccai-chatbot-container {
+        width: calc(100vw - 12px);
+        height: calc(100vh - 24px);
+        bottom: 6px;
+        left: 6px;
+        border-radius: 18px;
+      }
+      
+      #rccai-chatbot-header {
+        border-radius: 18px 18px 0 0;
+        padding: 10px 14px;
+      }
+      
+      #rccai-chatbot-close {
+        width: 22px;
+        height: 22px;
+        font-size: 0.9em;
+      }
+      
+      #rccai-chatbot-messages {
+        padding: 12px;
+      }
+      
+      #rccai-chatbot-input-area {
+        border-radius: 0 0 18px 18px;
+        padding: 10px 12px;
+        gap: 6px;
+      }
+      
+      #rccai-chatbot-input {
+        padding: 8px 10px;
+        border-radius: 14px;
+        font-size: 11px;
+        min-height: 16px;
+        max-height: 50px;
+      }
+      
+      #rccai-chatbot-send {
+        padding: 8px 12px;
+        border-radius: 14px;
+        min-width: 50px;
+        font-size: 11px;
+      }
+      
+      #rccai-chatbot-credits {
+        border-radius: 0 0 18px 18px;
+        padding: 5px 12px;
+        font-size: 8px;
+      }
+      
+      #rccai-chatbot-toggle {
+        bottom: 10px;
+        left: 10px;
+        width: 42px;
+        height: 42px;
+      }
+      
+      #rccai-chatbot-toggle img {
+        width: 24px;
+        height: 24px;
+      }
+      
+      .rccai-message-content {
+        max-width: 92%;
+        padding: 8px 12px;
+        font-size: 11px;
+        line-height: 1.4;
+        border-radius: 16px;
+      }
+      
+      .rccai-message {
+        margin-bottom: 12px;
+      }
+      
+      #rccai-chatbot-tooltip {
+        bottom: 60px;
+        left: 10px;
+        max-width: 120px;
+        font-size: 9px;
+        padding: 5px 8px;
+      }
+    }
+    @media (max-height: 500px) and (orientation: landscape) {
+      #rccai-chatbot-container {
+        height: calc(100vh - 20px);
+        max-height: none;
+        width: calc(100vw - 40px);
+        max-width: 500px;
+      }
+      
+      #rccai-chatbot-messages {
+        padding: 10px 14px;
+      }
+      
+      #rccai-chatbot-input {
+        max-height: 35px;
+        padding: 8px 12px;
+      }
+      
+      #rccai-chatbot-header {
+        padding: 8px 14px;
+      }
+      
+      #rccai-chatbot-input-area {
+        padding: 8px 14px;
+      }
+      
+      #rccai-chatbot-credits {
+        padding: 5px 14px;
+        font-size: 9px;
+      }
+      
+      .rccai-message-content {
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+    }
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+      #rccai-chatbot-container {
+        border-width: 0.5px;
+      }
+      
+      #rccai-chatbot-header,
+      #rccai-chatbot-input-area,
+      #rccai-chatbot-credits {
+        border-width: 0.5px;
+      }
+      
+      #rccai-chatbot-input,
+      #rccai-chatbot-send,
+      .rccai-message-content {
+        border-width: 0.5px;
+      }
+    }
+    @supports (padding: max(0px)) {
+      @media (max-width: 480px) {
+        #rccai-chatbot-container {
+          bottom: max(10px, env(safe-area-inset-bottom));
+          left: max(10px, env(safe-area-inset-left));
+          width: calc(100vw - max(20px, env(safe-area-inset-left) + env(safe-area-inset-right)));
+          height: calc(100vh - max(40px, env(safe-area-inset-top) + env(safe-area-inset-bottom)));
+        }
+        
+        #rccai-chatbot-toggle {
+          bottom: max(15px, env(safe-area-inset-bottom) + 5px);
+          left: max(15px, env(safe-area-inset-left) + 5px);
+        }
+        
+        #rccai-chatbot-tooltip {
+          bottom: max(75px, env(safe-area-inset-bottom) + 65px);
+          left: max(15px, env(safe-area-inset-left) + 5px);
+        }
+      }
+    }
+    @media (prefers-color-scheme: dark) {
+      #rccai-chatbot-container {
+        background: linear-gradient(135deg, 
+          rgba(0, 0, 0, 0.98) 0%, 
+          rgba(26, 26, 26, 0.95) 30%,
+          rgba(45, 45, 45, 0.90) 60%, 
+          rgba(0, 0, 0, 1) 100%);
+      }
+      
+      #rccai-chatbot-input {
+        background: linear-gradient(135deg, 
+          rgba(26, 26, 26, 0.8) 0%, 
+          rgba(45, 45, 45, 0.7) 50%,
+          rgba(26, 26, 26, 0.8) 100%);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #rccai-chatbot-container,
+      #rccai-chatbot-toggle,
+      .rccai-message,
+      .rccai-message-content,
+      #rccai-chatbot-input,
+      #rccai-chatbot-send {
+        transition: none;
+        animation: none;
+      }
+      
+      @keyframes slideIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      @keyframes shimmer,
+      @keyframes typing-dots,
+      @keyframes fadeInUp,
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+    }
+    @media (pointer: coarse) {
+      #rccai-chatbot-close,
+      #rccai-chatbot-send,
+      #rccai-chatbot-toggle {
+        min-height: 44px;
+        min-width: 44px;
+      }
+      
+      #rccai-chatbot-input {
+        min-height: 40px;
+      }
+      
+      .rccai-message-content {
+        padding: 14px 18px;
+      }
     }
 
     @media (max-width: 480px) {
@@ -638,18 +1214,32 @@
   document.head.appendChild(animationStyle);
   
   const chatbotHTML = `
-    <div id="rccai-chatbot-toggle">
-      <img src="https://i.imgur.com/hBHOf8e.png" alt="RCC AI">
+    <div id="rccai-chatbot-tooltip">
+      Quer ajuda? Só me chamar!
     </div>
-    <div id="rccai-chatbot-tooltip">Clique para conversar com a IA da RCC!</div>
+    <button id="rccai-chatbot-toggle">
+      <img src="https://i.imgur.com/hBHOf8e.png" alt="RCC AI" />
+    </button>
     <div id="rccai-chatbot-container">
       <div id="rccai-chatbot-header">
         <button id="rccai-chatbot-close">✕</button>
       </div>
-      <div id="rccai-chatbot-messages"></div>
+      <div id="rccai-chatbot-messages">
+        <div class="rccai-message ai">
+          <div class="rccai-message-content" id="rccai-welcome-message">
+            Olá! 👋 Sou a assistente inteligente da RCC! Como posso te ajudar?
+          </div>
+        </div>
+      </div>
       <div id="rccai-chatbot-input-area">
-        <textarea id="rccai-chatbot-input" placeholder="Digite sua mensagem..." rows="1"></textarea>
+        <div class="rccai-typing">
+          A assistente está pensando<span class="rccai-typing-dots"><span>.</span><span>.</span><span>.</span></span>
+        </div>
+        <textarea id="rccai-chatbot-input" placeholder="Digite sua pergunta..." rows="1"></textarea>
         <button id="rccai-chatbot-send">Enviar</button>
+      </div>
+      <div id="rccai-chatbot-credits">
+        IA desenvolvida por <span class="developer">laurocg2</span> para a RCC
       </div>
     </div>
   `;
@@ -666,9 +1256,156 @@
   const messagesDiv = document.getElementById('rccai-chatbot-messages');
   const input = document.getElementById('rccai-chatbot-input');
   const sendBtn = document.getElementById('rccai-chatbot-send');
+  const typingIndicator = document.querySelector('.rccai-typing');
   
   let conversationHistory = [];
   let isWaitingResponse = false;
+  let isOpen = false;
+  let messageHistory = [];
+  let currentUsername = null;
+  
+  function getUsernameFromForum() {
+    try {
+      if (window._userdata && window._userdata.username) {
+        return window._userdata.username;
+      }
+      if (window._userdata && window._userdata["username"]) {
+        return window._userdata["username"];
+      }
+      if (window.userdata && window.userdata.username) {
+        return window.userdata.username;
+      }
+      if (window.username) {
+        return window.username;
+      }
+      if (window.currentUser) {
+        return window.currentUser;
+      }
+      const usernameSelectors = [
+        '.username',
+        '[data-username]',
+        '.user-name',
+        '#username',
+        '.navbar .username',
+        '.header-username',
+        '.profile-username',
+        'a[href*="/u/"]',
+        '.memberlist a',
+        '.postprofile .username'
+      ];
+      for (let selector of usernameSelectors) {
+        const element = document.querySelector(selector);
+        if (element) {
+          if (element.getAttribute('data-username')) {
+            return element.getAttribute('data-username').trim();
+          }
+          if (element.textContent && element.textContent.trim()) {
+            const username = element.textContent.trim();
+            if (username.length > 0 && username.length < 50 && !/^\s*$/.test(username)) {
+              return username;
+            }
+          }
+          if (element.href) {
+            const match = element.href.match(/\/u\/([A-Za-z0-9_-]+)/);
+            if (match && match[1]) {
+              return match[1];
+            }
+          }
+        }
+      }
+      const bodyText = document.body.innerHTML;
+      const patterns = [
+        /data-username=["']([A-Za-z0-9_-]+)["']/i,
+        /username:\s*["']([A-Za-z0-9_-]+)["']/i,
+        /user:\s*["']([A-Za-z0-9_-]+)["']/i,
+        /"username":\s*"([A-Za-z0-9_-]+)"/i
+      ];
+
+      for (let pattern of patterns) {
+        const match = bodyText.match(pattern);
+        if (match && match[1]) {
+          return match[1].trim();
+        }
+      }
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        const [name, value] = cookie.split('=').map(c => c.trim());
+        if (name === 'username' || name === 'user' || name === 'currentUser') {
+          if (value && value !== 'null' && value !== 'undefined') {
+            return decodeURIComponent(value);
+          }
+        }
+      }
+      if (window.localStorage) {
+        const storageKeys = ['username', 'user', 'currentUser', 'loggedUser'];
+        for (let key of storageKeys) {
+          const value = localStorage.getItem(key);
+          if (value && value !== 'null' && value !== 'undefined') {
+            return value;
+          }
+        }
+      }
+      return null;
+    } catch (error) {
+      return null;
+    }
+  }
+  
+  currentUsername = getUsernameFromForum();
+  
+  function updateWelcomeMessage() {
+    const welcomeElement = document.getElementById('rccai-welcome-message');
+    if (welcomeElement) {
+      if (currentUsername) {
+        welcomeElement.textContent = `Olá ${currentUsername}! 👋 Sou a assistente inteligente da RCC! Como posso te ajudar?`;
+      } else {
+        welcomeElement.textContent = 'Olá! 👋 Sou a assistente inteligente da RCC! Como posso te ajudar?';
+      }
+    }
+  }
+  
+  updateWelcomeMessage();
+  
+  function processLinks(text) {
+    text = text.replace(/(https?:\/\/[^\s<>"{}|\\^`[\]]+)/gi, function(match) {
+      let cleanUrl = match.replace(/[.,;:!?)\]]+$/, '');
+      let punctuation = match.substring(cleanUrl.length);
+      return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" style="
+        color: #FF8C00; 
+        font-weight: 600; 
+        text-decoration: none; 
+        padding: 4px 8px; 
+        background: linear-gradient(135deg, rgba(255, 149, 0, 0.15), rgba(255, 193, 0, 0.15)); 
+        border-radius: 8px; 
+        border: 1px solid rgba(255, 149, 0, 0.3);
+        transition: all 0.3s ease;
+        display: inline-block;
+        margin: 2px;
+      " onmouseover="this.style.background='linear-gradient(135deg, rgba(255, 149, 0, 0.25), rgba(255, 193, 0, 0.25))'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(255, 149, 0, 0.2)';" onmouseout="this.style.background='linear-gradient(135deg, rgba(255, 149, 0, 0.15), rgba(255, 193, 0, 0.15))'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">🔗 Clique Aqui</a>${punctuation}`;
+    });
+    text = text.replace(/(?<!href="|https?:\/\/)(www\.[^\s<>"{}|\\^`[\]]+)/gi, function(match) {
+      let cleanUrl = match.replace(/[.,;:!?)\]]+$/, '');
+      let punctuation = match.substring(cleanUrl.length);
+      return `<a href="http://${cleanUrl}" target="_blank" rel="noopener noreferrer" style="
+        color: #FF8C00; 
+        font-weight: 600; 
+        text-decoration: none; 
+        padding: 4px 8px; 
+        background: linear-gradient(135deg, rgba(255, 149, 0, 0.15), rgba(255, 193, 0, 0.15)); 
+        border-radius: 8px; 
+        border: 1px solid rgba(255, 149, 0, 0.3);
+        transition: all 0.3s ease;
+        display: inline-block;
+        margin: 2px;
+      " onmouseover="this.style.background='linear-gradient(135deg, rgba(255, 149, 0, 0.25), rgba(255, 193, 0, 0.25))'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(255, 149, 0, 0.2)';" onmouseout="this.style.background='linear-gradient(135deg, rgba(255, 149, 0, 0.15), rgba(255, 193, 0, 0.15))'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">🔗 Clique Aqui</a>${punctuation}`;
+    });
+    return text;
+  }
+  
+  function adjustTextareaHeight() {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 100) + 'px';
+  }
   
   function addMessage(text, isUser = false) {
     const messageDiv = document.createElement('div');
@@ -680,74 +1417,60 @@
     if (isUser) {
       contentDiv.textContent = text;
     } else {
-      contentDiv.innerHTML = formatMessage(text);
+      text = processLinks(text);
+      contentDiv.innerHTML = text.replace(/\n/g, '<br>');
     }
     
     messageDiv.appendChild(contentDiv);
+    
+    if (typingIndicator) {
+      typingIndicator.style.display = 'none';
+    }
+    
     messagesDiv.appendChild(messageDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    
+    messageHistory.push({ 
+      sender: isUser ? 'user' : 'ai', 
+      text: text.replace(/<br>/g, '\n') 
+    });
+    
+    if (messageHistory.length > 20) {
+      messageHistory = messageHistory.slice(-20);
+    }
     
     return messageDiv;
   }
   
-  function formatMessage(text) {
-    text = text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-    
-    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    text = text.replace(/`(.*?)`/g, '<code style="background: rgba(255, 193, 0, 0.2); padding: 2px 6px; border-radius: 4px; font-family: monospace; color: rgba(255, 215, 0, 0.95);">$1</code>');
-    
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    text = text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
-    
-    text = text.replace(/\n/g, '<br>');
-    
-    return text;
+  function showTyping() {
+    if (typingIndicator) {
+      typingIndicator.style.display = 'block';
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
   }
   
-  function addTypingIndicator() {
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'rccai-message ai';
-    typingDiv.id = 'rccai-typing-indicator';
-    
+  async function typeMessage(sender, text) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `rccai-message ${sender}`;
     const contentDiv = document.createElement('div');
     contentDiv.className = 'rccai-message-content';
-    contentDiv.innerHTML = `
-      <div style="display: flex; gap: 6px; align-items: center; justify-content: center; padding: 8px 0;">
-        <div style="width: 8px; height: 8px; background: rgba(255, 193, 0, 0.8); border-radius: 50%; animation: typing 1.4s infinite;"></div>
-        <div style="width: 8px; height: 8px; background: rgba(255, 193, 0, 0.8); border-radius: 50%; animation: typing 1.4s infinite 0.2s;"></div>
-        <div style="width: 8px; height: 8px; background: rgba(255, 193, 0, 0.8); border-radius: 50%; animation: typing 1.4s infinite 0.4s;"></div>
-      </div>
-    `;
-    
-    typingDiv.appendChild(contentDiv);
-    messagesDiv.appendChild(typingDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    
-    const typingAnimation = document.createElement('style');
-    typingAnimation.textContent = `
-      @keyframes typing {
-        0%, 60%, 100% { transform: translateY(0); opacity: 0.7; }
-        30% { transform: translateY(-10px); opacity: 1; }
-      }
-    `;
-    if (!document.querySelector('#rccai-typing-animation')) {
-      typingAnimation.id = 'rccai-typing-animation';
-      document.head.appendChild(typingAnimation);
+    messageDiv.appendChild(contentDiv);
+    messagesDiv.appendChild(messageDiv);
+    if (sender === 'ai') {
+      text = processLinks(text);
     }
-    
-    return typingDiv;
-  }
-  
-  function removeTypingIndicator() {
-    const typingIndicator = document.getElementById('rccai-typing-indicator');
-    if (typingIndicator) {
-      typingIndicator.remove();
+    const processedText = text.replace(/\n/g, '<br>');
+    let currentText = '';
+    const words = processedText.split(' ');
+    for (let i = 0; i < words.length; i++) {
+      currentText += (i > 0 ? ' ' : '') + words[i];
+      contentDiv.innerHTML = currentText;
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      await new Promise(resolve => setTimeout(resolve, 30));
+    }
+    messageHistory.push({ sender, text: text });
+    if (messageHistory.length > 20) {
+      messageHistory = messageHistory.slice(-20);
     }
   }
   
@@ -755,21 +1478,25 @@
     const message = input.value.trim();
     if (!message || isWaitingResponse) return;
     
-    const username = getCookie('user_field_1_7');
+    if (!currentUsername) {
+      currentUsername = getUsernameFromForum();
+    }
+    
+    const username = getCookie('user_field_1_7') || currentUsername;
     
     if (!username) {
       showNotification('⚠️ Você precisa estar logado para usar o chatbot!', 'warning', 4000);
       return;
     }
     
-    input.value = '';
-    input.style.height = 'auto';
     addMessage(message, true);
-    conversationHistory.push({ role: 'user', content: message });
+    input.value = '';
+    adjustTextareaHeight();
     
     isWaitingResponse = true;
     sendBtn.disabled = true;
-    const typingIndicator = addTypingIndicator();
+    sendBtn.textContent = '...';
+    showTyping();
     
     try {
       const controller = new AbortController();
@@ -783,7 +1510,7 @@
         body: JSON.stringify({
           question: message,
           username: username,
-          history: conversationHistory.slice(-10)
+          history: messageHistory.slice(-10)
         }),
         signal: controller.signal
       });
@@ -801,21 +1528,20 @@
       
       const data = await response.json();
       
-      removeTypingIndicator();
+      if (typingIndicator) {
+        typingIndicator.style.display = 'none';
+      }
       
       if (data.answer) {
-        addMessage(data.answer, false);
-        conversationHistory.push({ role: 'assistant', content: data.answer });
-        
-        if (conversationHistory.length > 20) {
-          conversationHistory = conversationHistory.slice(-20);
-        }
+        await typeMessage('ai', data.answer);
       } else {
         throw new Error('Resposta inválida do servidor');
       }
       
     } catch (error) {
-      removeTypingIndicator();
+      if (typingIndicator) {
+        typingIndicator.style.display = 'none';
+      }
       
       if (error.name === 'AbortError') {
         if (retryCount < API_CONFIG.RETRY_ATTEMPTS) {
@@ -824,44 +1550,53 @@
           return sendMessage(retryCount + 1);
         } else {
           showNotification('❌ Tempo limite excedido. Tente novamente mais tarde.', 'error', 5000);
-          addMessage('Desculpe, o servidor demorou muito para responder. Por favor, tente novamente.', false);
+          addMessage('⚠️ Desculpe, ocorreu um erro. Tente novamente.', false);
         }
       } else {
         const errorMessage = error.message || 'Erro desconhecido ao processar sua mensagem';
         showNotification(`❌ ${errorMessage}`, 'error', 5000);
-        addMessage(`Desculpe, ocorreu um erro: ${errorMessage}. Tente novamente em alguns instantes.`, false);
+        addMessage('⚠️ Desculpe, ocorreu um erro. Tente novamente.', false);
       }
-      
-      conversationHistory.pop();
     } finally {
       isWaitingResponse = false;
       sendBtn.disabled = false;
+      sendBtn.textContent = 'Enviar';
       input.focus();
     }
   }
   
-  toggle.addEventListener('click', () => {
-    const username = getCookie('user_field_1_7');
+  toggle.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     
-    if (!username) {
-      showNotification('⚠️ Você precisa estar logado para usar o chatbot!', 'warning', 4000);
-      return;
+    const tooltip = document.getElementById('rccai-chatbot-tooltip');
+    if (tooltip && !tooltip.classList.contains('fade-out')) {
+      tooltip.classList.add('fade-out');
+      setTimeout(() => {
+        tooltip.style.display = 'none';
+      }, 400);
     }
     
-    container.classList.add('show');
-    toggle.style.display = 'none';
-    input.focus();
+    isOpen = !isOpen;
     
-    if (messagesDiv.children.length === 0) {
-      addMessage('Olá! Sou a IA da RCC. Como posso ajudá-lo hoje? 😊', false);
+    if (isOpen) {
+      if (!currentUsername) {
+        currentUsername = getUsernameFromForum();
+        updateWelcomeMessage();
+      }
+      container.classList.add('show');
+      toggle.classList.add('hidden');
+      setTimeout(() => input && input.focus(), 100);
+    } else {
+      container.classList.remove('show');
+      toggle.classList.remove('hidden');
     }
   });
   
   closeBtn.addEventListener('click', () => {
+    isOpen = false;
     container.classList.remove('show');
-    setTimeout(() => {
-      toggle.style.display = 'flex';
-    }, 300);
+    toggle.classList.remove('hidden');
   });
   
   sendBtn.addEventListener('click', sendMessage);
@@ -873,28 +1608,40 @@
     }
   });
   
-  input.addEventListener('input', function() {
-    this.style.height = 'auto';
-    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-  });
+  input.addEventListener('input', adjustTextareaHeight);
   
-  container.addEventListener('click', (e) => {
-    if (e.target === container) {
+  document.addEventListener('click', (e) => {
+    if (isOpen && !container.contains(e.target) && e.target !== toggle) {
+      isOpen = false;
       container.classList.remove('show');
-      setTimeout(() => {
-        toggle.style.display = 'flex';
-      }, 300);
+      toggle.classList.remove('hidden');
     }
   });
   
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && container.classList.contains('show')) {
+    if (e.key === 'Escape' && isOpen) {
+      isOpen = false;
       container.classList.remove('show');
-      setTimeout(() => {
-        toggle.style.display = 'flex';
-      }, 300);
+      toggle.classList.remove('hidden');
     }
   });
+  
+  function showTooltip() {
+    const tooltip = document.getElementById('rccai-chatbot-tooltip');
+    if (tooltip) {
+      setTimeout(() => {
+        tooltip.classList.add('show');
+      }, 1000);
+      setTimeout(() => {
+        tooltip.classList.add('fade-out');
+        setTimeout(() => {
+          tooltip.style.display = 'none';
+        }, 400);
+      }, 11000);
+    }
+  }
+  
+  showTooltip();
   
   let touchStartY = 0;
   let touchEndY = 0;
