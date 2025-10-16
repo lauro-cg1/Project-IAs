@@ -1,0 +1,916 @@
+(function() {
+  console.log("RCCAI 1.0");
+  'use strict';
+  if (window.rccAIChatbotFunctions) {
+    return;
+  }
+  window.rccAIChatbotFunctions = true;
+  const chatbotCSS = `
+    #rccai-chatbot-container {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 400px;
+      height: 600px;
+      background: linear-gradient(135deg, 
+        rgba(0, 0, 0, 0.95) 0%, 
+        rgba(26, 26, 26, 0.90) 30%,
+        rgba(45, 45, 45, 0.85) 60%, 
+        rgba(0, 0, 0, 0.95) 100%);
+      border-radius: 32px;
+      box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.8),
+        0 0 0 1px rgba(255, 193, 0, 0.2),
+        inset 0 1px 0 rgba(255, 215, 0, 0.15),
+        0 8px 32px rgba(255, 149, 0, 0.25);
+      border: 1px solid rgba(255, 193, 0, 0.3);
+      z-index: 10000;
+      display: none;
+      flex-direction: column;
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      transform: scale(0.8) translateY(20px);
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      box-sizing: border-box;
+      min-width: 280px;
+      min-height: 350px;
+    }
+
+    #rccai-chatbot-container.show {
+      display: flex;
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+
+    #rccai-chatbot-header {
+      background: 
+        linear-gradient(135deg, 
+          rgba(255, 149, 0, 0.7) 0%, 
+          rgba(255, 193, 0, 0.5) 30%,
+          rgba(0, 0, 0, 0.8) 70%,
+          rgba(0, 0, 0, 0.9) 100%),
+        url('https://i.imgur.com/z4GuRok.png') center/cover;
+      color: rgba(255, 255, 255, 0.95);
+      padding: 23px;
+      border-radius: 32px 32px 0 0;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid rgba(255, 193, 0, 0.3);
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 215, 0, 0.3),
+        0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    #rccai-chatbot-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 215, 0, 0.4), 
+        rgba(255, 149, 0, 0.3),
+        rgba(255, 215, 0, 0.4),
+        transparent);
+      animation: shimmer 4s infinite;
+      opacity: 0.8;
+    }
+
+    @keyframes shimmer {
+      0% { left: -100%; opacity: 0; }
+      50% { opacity: 0.8; }
+      100% { left: 100%; opacity: 0; }
+    }
+
+
+    #rccai-chatbot-close {
+      background: linear-gradient(135deg, 
+        rgba(239, 68, 68, 0.8) 0%, 
+        rgba(220, 38, 38, 0.9) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: rgba(255, 255, 255, 0.95);
+      font-size: 1.4em;
+      cursor: pointer;
+      width: 23px;
+      height: 23px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      z-index: 1;
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      box-shadow: 
+        0 4px 15px rgba(239, 68, 68, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    #rccai-chatbot-close:hover {
+      background: linear-gradient(135deg, 
+        rgba(239, 68, 68, 1) 0%, 
+        rgba(220, 38, 38, 1) 100%);
+      transform: rotate(90deg) scale(1.1);
+      box-shadow: 
+        0 8px 20px rgba(239, 68, 68, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        0 0 15px rgba(239, 68, 68, 0.4);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    #rccai-chatbot-messages {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+      background: rgba(0, 0, 0, 0.5);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 193, 0, 0.7) rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px) saturate(120%);
+      -webkit-backdrop-filter: blur(10px) saturate(120%);
+    }
+
+    #rccai-chatbot-messages::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #rccai-chatbot-messages::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      margin: 4px;
+    }
+
+    #rccai-chatbot-messages::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, 
+        rgba(255, 215, 0, 0.8), 
+        rgba(255, 149, 0, 0.9));
+      border-radius: 12px;
+      border: 2px solid rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(20px);
+      box-shadow: 
+        0 2px 8px rgba(255, 193, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    #rccai-chatbot-messages::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, 
+        rgba(255, 215, 0, 1), 
+        rgba(255, 149, 0, 1));
+      box-shadow: 
+        0 4px 12px rgba(255, 193, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    .rccai-message {
+      margin-bottom: 18px;
+      animation: slideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+        filter: blur(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0px);
+      }
+    }
+
+    .rccai-message-content {
+      max-width: 85%;
+      padding: 16px 20px;
+      border-radius: 24px;
+      font-size: 14px;
+      line-height: 1.6;
+      box-shadow: 
+        0 10px 40px rgba(0, 0, 0, 0.3),
+        0 4px 20px rgba(255, 149, 0, 0.2),
+        inset 0 1px 0 rgba(255, 215, 0, 0.2),
+        0 0 0 1px rgba(255, 193, 0, 0.2);
+      word-wrap: break-word;
+      backdrop-filter: blur(25px) saturate(180%);
+      -webkit-backdrop-filter: blur(25px) saturate(180%);
+      border: 1px solid rgba(255, 193, 0, 0.3);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .rccai-message-content:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 
+        0 15px 50px rgba(0, 0, 0, 0.4),
+        0 8px 25px rgba(255, 149, 0, 0.3),
+        inset 0 1px 0 rgba(255, 215, 0, 0.4),
+        0 0 30px rgba(255, 193, 0, 0.3);
+    }
+
+    .rccai-message.user {
+      text-align: right;
+    }
+
+    .rccai-message.user .rccai-message-content {
+      background: linear-gradient(135deg, 
+        rgba(255, 149, 0, 0.95) 0%, 
+        rgba(255, 193, 0, 0.85) 30%,
+        rgba(255, 140, 0, 0.95) 70%,
+        rgba(204, 102, 0, 1) 100%);
+      color: rgba(0, 0, 0, 0.95);
+      margin-left: auto;
+      border-bottom-right-radius: 8px;
+      text-shadow: 
+        0 1px 2px rgba(255, 255, 255, 0.3),
+        0 0 10px rgba(255, 215, 0, 0.4);
+      border: 1px solid rgba(255, 215, 0, 0.5);
+      font-weight: 600;
+    }
+
+    .rccai-message.ai {
+      text-align: left;
+    }
+
+    .rccai-message.ai .rccai-message-content {
+      background: linear-gradient(135deg, 
+        rgba(26, 26, 26, 0.9) 0%, 
+        rgba(45, 45, 45, 0.85) 30%,
+        rgba(26, 26, 26, 0.9) 70%,
+        rgba(0, 0, 0, 0.95) 100%);
+      color: rgba(255, 215, 0, 0.95);
+      border: 1px solid rgba(255, 193, 0, 0.4);
+      border-bottom-left-radius: 8px;
+      backdrop-filter: blur(25px) saturate(120%);
+      -webkit-backdrop-filter: blur(25px) saturate(120%);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+    .rccai-message.ai .rccai-message-content a {
+      color: rgba(255, 149, 0, 1);
+      font-weight: 600;
+      text-decoration: none;
+      text-shadow: 0 0 10px rgba(255, 149, 0, 0.6);
+    }
+
+    .rccai-message.ai .rccai-message-content a:hover {
+      color: rgba(255, 215, 0, 1);
+      text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+    }
+
+    #rccai-chatbot-input-area {
+      padding: 20px 24px;
+      border-top: 1px solid rgba(255, 193, 0, 0.3);
+      display: flex;
+      gap: 14px;
+      align-items: flex-end;
+      background: linear-gradient(135deg, 
+        rgba(0, 0, 0, 0.9) 0%, 
+        rgba(26, 26, 26, 0.85) 50%,
+        rgba(0, 0, 0, 0.9) 100%);
+      backdrop-filter: blur(25px) saturate(150%);
+      -webkit-backdrop-filter: blur(25px) saturate(150%);
+      box-shadow: 
+        inset 0 1px 0 rgba(255, 193, 0, 0.2),
+        0 -2px 10px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    #rccai-chatbot-input {
+      flex: 1;
+      padding: 16px 20px;
+      border: 1px solid rgba(255, 193, 0, 0.4);
+      border-radius: 20px;
+      font-size: 14px;
+      resize: none;
+      min-height: 24px;
+      max-height: 120px;
+      outline: none;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      font-family: inherit;
+      background: linear-gradient(135deg, 
+        rgba(26, 26, 26, 0.7) 0%, 
+        rgba(45, 45, 45, 0.6) 50%,
+        rgba(26, 26, 26, 0.7) 100%);
+      color: rgba(255, 215, 0, 0.95);
+      backdrop-filter: blur(20px) saturate(120%);
+      -webkit-backdrop-filter: blur(20px) saturate(120%);
+      box-shadow: 
+        0 8px 25px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 193, 0, 0.2),
+        0 0 0 1px rgba(255, 193, 0, 0.2);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      scrollbar-width: none;
+      overflow: auto;
+      box-sizing: border-box;
+      -webkit-appearance: none;
+      -webkit-border-radius: 20px;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      word-wrap: break-word;
+      word-break: break-word;
+    }
+
+    #rccai-chatbot-input::-webkit-scrollbar {
+      display: none;
+    }
+
+    #rccai-chatbot-input:focus {
+      border-color: rgba(255, 149, 0, 0.8);
+      box-shadow: 
+        0 0 0 3px rgba(255, 149, 0, 0.3),
+        0 12px 30px rgba(255, 149, 0, 0.25),
+        inset 0 1px 0 rgba(255, 215, 0, 0.3),
+        0 0 20px rgba(255, 193, 0, 0.2);
+      background: linear-gradient(135deg, 
+        rgba(26, 26, 26, 0.8) 0%, 
+        rgba(45, 45, 45, 0.7) 50%,
+        rgba(26, 26, 26, 0.8) 100%);
+      transform: translateY(-1px);
+    }
+
+    #rccai-chatbot-input::placeholder {
+      color: rgba(255, 193, 0, 0.5);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+    #rccai-chatbot-send {
+      padding: 16px 24px;
+      background: linear-gradient(135deg, 
+        rgba(255, 193, 0, 1) 0%, 
+        rgba(255, 149, 0, 1) 50%,
+        rgba(255, 140, 0, 1) 100%);
+      color: rgba(0, 0, 0, 0.95);
+      border: 1px solid rgba(255, 215, 0, 0.5);
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      min-width: 80px;
+      backdrop-filter: blur(20px) saturate(150%);
+      -webkit-backdrop-filter: blur(20px) saturate(150%);
+      box-shadow: 
+        0 8px 25px rgba(255, 149, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        0 0 0 1px rgba(255, 215, 0, 0.3);
+      text-shadow: 
+        0 1px 2px rgba(255, 255, 255, 0.5),
+        0 0 10px rgba(255, 215, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #rccai-chatbot-send::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.3), 
+        transparent);
+      transition: left 0.5s;
+    }
+
+    #rccai-chatbot-send:hover::before {
+      left: 100%;
+    }
+
+    #rccai-chatbot-send:hover {
+      background: linear-gradient(135deg, 
+        rgba(255, 215, 0, 1) 0%, 
+        rgba(255, 193, 0, 1) 50%,
+        rgba(255, 149, 0, 1) 100%);
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 
+        0 15px 40px rgba(255, 149, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+        0 0 25px rgba(255, 193, 0, 0.5);
+    }
+
+    #rccai-chatbot-send:disabled {
+      background: linear-gradient(135deg, 
+        rgba(45, 45, 45, 0.6) 0%, 
+        rgba(26, 26, 26, 0.8) 100%);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      opacity: 0.6;
+      color: rgba(255, 193, 0, 0.4);
+    }
+
+    #rccai-chatbot-toggle {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, 
+        rgba(255, 193, 0, 0.3) 0%, 
+        rgba(0, 0, 0, 0.5) 100%);
+      border: 1px solid rgba(255, 193, 0, 0.5);
+      border-radius: 50%;
+      color: white;
+      font-size: 1.5em;
+      cursor: pointer;
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        0 20px 60px rgba(255, 149, 0, 0.3),
+        inset 0 1px 0 rgba(255, 215, 0, 0.4);
+      z-index: 9999;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+
+    #rccai-chatbot-toggle img {
+      width: 36px;
+      height: 36px;
+      object-fit: cover;
+      border-radius: 50%;
+      display: block;
+    }
+
+    #rccai-chatbot-toggle:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.5),
+        0 25px 80px rgba(255, 149, 0, 0.4),
+        inset 0 1px 0 rgba(255, 215, 0, 0.6);
+      background: linear-gradient(135deg, 
+        rgba(255, 215, 0, 0.4) 0%, 
+        rgba(0, 0, 0, 0.6) 100%);
+    }
+
+    #rccai-chatbot-toggle.hidden {
+      display: none;
+    }
+
+    #rccai-chatbot-tooltip {
+      position: fixed;
+      bottom: 95px;
+      left: 20px;
+      background: linear-gradient(135deg, 
+        rgba(255, 140, 0, 0.95) 0%, 
+        rgba(255, 149, 0, 0.9) 30%,
+        rgba(255, 193, 0, 0.85) 70%,
+        rgba(204, 102, 0, 0.98) 100%);
+      color: rgba(0, 0, 0, 0.95);
+      padding: 12px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      max-width: 200px;
+      text-align: center;
+      box-shadow: 
+        0 8px 25px rgba(0, 0, 0, 0.4),
+        0 4px 12px rgba(255, 149, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      border: 1px solid rgba(255, 215, 0, 0.5);
+      backdrop-filter: blur(20px) saturate(150%);
+      -webkit-backdrop-filter: blur(20px) saturate(150%);
+      z-index: 9998;
+      opacity: 0;
+      transform: translateY(10px) scale(0.9);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+      line-height: 1.4;
+    }
+
+    #rccai-chatbot-tooltip::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 20px;
+      width: 12px;
+      height: 12px;
+      background: rgba(255, 140, 0, 0.95);
+      border-right: 1px solid rgba(255, 215, 0, 0.5);
+      border-bottom: 1px solid rgba(255, 215, 0, 0.5);
+      transform: rotate(45deg);
+    }
+
+    #rccai-chatbot-toggle:hover + #rccai-chatbot-tooltip {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    @media (max-width: 480px) {
+      #rccai-chatbot-container {
+        width: calc(100% - 40px);
+        height: calc(100% - 100px);
+        bottom: 10px;
+        left: 20px;
+        max-width: 100%;
+      }
+
+      #rccai-chatbot-toggle {
+        width: 56px;
+        height: 56px;
+      }
+
+      #rccai-chatbot-toggle img {
+        width: 32px;
+        height: 32px;
+      }
+    }
+
+    @media (max-height: 600px) {
+      #rccai-chatbot-container {
+        height: calc(100vh - 100px);
+      }
+    }
+  `;
+  
+  const style = document.createElement('style');
+  style.textContent = chatbotCSS;
+  document.head.appendChild(style);
+  
+  const API_CONFIG = {
+    API_URL: 'https://rccai-worker.laurocg2.workers.dev',
+    TIMEOUT: 120000,
+    RETRY_ATTEMPTS: 2,
+    RETRY_DELAY: 2000
+  };
+  
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+  
+  function showNotification(message, type = 'info', duration = 3000) {
+    const existingNotification = document.querySelector('.rccai-notification');
+    if (existingNotification) {
+      existingNotification.remove();
+    }
+    
+    const notification = document.createElement('div');
+    notification.className = 'rccai-notification';
+    notification.textContent = message;
+    
+    const colors = {
+      info: 'linear-gradient(135deg, rgba(255, 193, 0, 0.95), rgba(255, 149, 0, 0.9))',
+      success: 'linear-gradient(135deg, rgba(34, 197, 94, 0.95), rgba(22, 163, 74, 0.9))',
+      error: 'linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(220, 38, 38, 0.9))',
+      warning: 'linear-gradient(135deg, rgba(251, 146, 60, 0.95), rgba(249, 115, 22, 0.9))'
+    };
+    
+    notification.style.cssText = `
+      position: fixed;
+      bottom: 100px;
+      left: 20px;
+      background: ${colors[type]};
+      color: ${type === 'info' ? 'rgba(0, 0, 0, 0.95)' : 'white'};
+      padding: 16px 24px;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 
+        0 10px 40px rgba(0, 0, 0, 0.4),
+        0 4px 12px ${type === 'info' ? 'rgba(255, 149, 0, 0.5)' : 'rgba(0, 0, 0, 0.3)'},
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      z-index: 10001;
+      animation: slideInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      text-shadow: ${type === 'info' ? '0 1px 2px rgba(255, 255, 255, 0.5)' : '0 1px 2px rgba(0, 0, 0, 0.3)'};
+      border: 1px solid ${type === 'info' ? 'rgba(255, 215, 0, 0.5)' : 'rgba(255, 255, 255, 0.3)'};
+      max-width: 300px;
+      word-wrap: break-word;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.style.animation = 'slideOutDown 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+      setTimeout(() => notification.remove(), 500);
+    }, duration);
+  }
+  
+  const animationStyles = `
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    
+    @keyframes slideOutDown {
+      from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+      }
+    }
+  `;
+  
+  const animationStyle = document.createElement('style');
+  animationStyle.textContent = animationStyles;
+  document.head.appendChild(animationStyle);
+  
+  const chatbotHTML = `
+    <div id="rccai-chatbot-toggle">
+      <img src="https://revotechbr.com/rcc/imagens/brasao-rcc.png" alt="RCC AI">
+    </div>
+    <div id="rccai-chatbot-tooltip">Clique para conversar com a IA da RCC!</div>
+    <div id="rccai-chatbot-container">
+      <div id="rccai-chatbot-header">
+        <button id="rccai-chatbot-close">✕</button>
+      </div>
+      <div id="rccai-chatbot-messages"></div>
+      <div id="rccai-chatbot-input-area">
+        <textarea id="rccai-chatbot-input" placeholder="Digite sua mensagem..." rows="1"></textarea>
+        <button id="rccai-chatbot-send">Enviar</button>
+      </div>
+    </div>
+  `;
+  
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = chatbotHTML;
+  document.body.appendChild(tempDiv.firstElementChild);
+  document.body.appendChild(tempDiv.firstElementChild);
+  document.body.appendChild(tempDiv.firstElementChild);
+  
+  const toggle = document.getElementById('rccai-chatbot-toggle');
+  const container = document.getElementById('rccai-chatbot-container');
+  const closeBtn = document.getElementById('rccai-chatbot-close');
+  const messagesDiv = document.getElementById('rccai-chatbot-messages');
+  const input = document.getElementById('rccai-chatbot-input');
+  const sendBtn = document.getElementById('rccai-chatbot-send');
+  
+  let conversationHistory = [];
+  let isWaitingResponse = false;
+  
+  function addMessage(text, isUser = false) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `rccai-message ${isUser ? 'user' : 'ai'}`;
+    
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'rccai-message-content';
+    
+    if (isUser) {
+      contentDiv.textContent = text;
+    } else {
+      contentDiv.innerHTML = formatMessage(text);
+    }
+    
+    messageDiv.appendChild(contentDiv);
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    
+    return messageDiv;
+  }
+  
+  function formatMessage(text) {
+    text = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+    
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    text = text.replace(/`(.*?)`/g, '<code style="background: rgba(255, 193, 0, 0.2); padding: 2px 6px; border-radius: 4px; font-family: monospace; color: rgba(255, 215, 0, 0.95);">$1</code>');
+    
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    text = text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+    
+    text = text.replace(/\n/g, '<br>');
+    
+    return text;
+  }
+  
+  function addTypingIndicator() {
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'rccai-message ai';
+    typingDiv.id = 'rccai-typing-indicator';
+    
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'rccai-message-content';
+    contentDiv.innerHTML = `
+      <div style="display: flex; gap: 6px; align-items: center; justify-content: center; padding: 8px 0;">
+        <div style="width: 8px; height: 8px; background: rgba(255, 193, 0, 0.8); border-radius: 50%; animation: typing 1.4s infinite;"></div>
+        <div style="width: 8px; height: 8px; background: rgba(255, 193, 0, 0.8); border-radius: 50%; animation: typing 1.4s infinite 0.2s;"></div>
+        <div style="width: 8px; height: 8px; background: rgba(255, 193, 0, 0.8); border-radius: 50%; animation: typing 1.4s infinite 0.4s;"></div>
+      </div>
+    `;
+    
+    typingDiv.appendChild(contentDiv);
+    messagesDiv.appendChild(typingDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    
+    const typingAnimation = document.createElement('style');
+    typingAnimation.textContent = `
+      @keyframes typing {
+        0%, 60%, 100% { transform: translateY(0); opacity: 0.7; }
+        30% { transform: translateY(-10px); opacity: 1; }
+      }
+    `;
+    if (!document.querySelector('#rccai-typing-animation')) {
+      typingAnimation.id = 'rccai-typing-animation';
+      document.head.appendChild(typingAnimation);
+    }
+    
+    return typingDiv;
+  }
+  
+  function removeTypingIndicator() {
+    const typingIndicator = document.getElementById('rccai-typing-indicator');
+    if (typingIndicator) {
+      typingIndicator.remove();
+    }
+  }
+  
+  async function sendMessage(retryCount = 0) {
+    const message = input.value.trim();
+    if (!message || isWaitingResponse) return;
+    
+    const username = getCookie('user_field_1_7');
+    
+    if (!username) {
+      showNotification('⚠️ Você precisa estar logado para usar o chatbot!', 'warning', 4000);
+      return;
+    }
+    
+    input.value = '';
+    input.style.height = 'auto';
+    addMessage(message, true);
+    conversationHistory.push({ role: 'user', content: message });
+    
+    isWaitingResponse = true;
+    sendBtn.disabled = true;
+    const typingIndicator = addTypingIndicator();
+    
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
+      
+      const response = await fetch(API_CONFIG.API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question: message,
+          username: username,
+          history: conversationHistory.slice(-10)
+        }),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        if (response.status === 429) {
+          throw new Error('Você está fazendo perguntas muito rápido. Aguarde um momento.');
+        } else if (response.status === 403) {
+          throw new Error('Você foi bloqueado temporariamente. Entre em contato com um Administrador se achar que isso é um erro.');
+        }
+        throw new Error(`Erro na resposta: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      removeTypingIndicator();
+      
+      if (data.answer) {
+        addMessage(data.answer, false);
+        conversationHistory.push({ role: 'assistant', content: data.answer });
+        
+        if (conversationHistory.length > 20) {
+          conversationHistory = conversationHistory.slice(-20);
+        }
+      } else {
+        throw new Error('Resposta inválida do servidor');
+      }
+      
+    } catch (error) {
+      removeTypingIndicator();
+      
+      if (error.name === 'AbortError') {
+        if (retryCount < API_CONFIG.RETRY_ATTEMPTS) {
+          showNotification(`⏱️ Tempo esgotado. Tentando novamente... (${retryCount + 1}/${API_CONFIG.RETRY_ATTEMPTS})`, 'warning', 3000);
+          await new Promise(resolve => setTimeout(resolve, API_CONFIG.RETRY_DELAY));
+          return sendMessage(retryCount + 1);
+        } else {
+          showNotification('❌ Tempo limite excedido. Tente novamente mais tarde.', 'error', 5000);
+          addMessage('Desculpe, o servidor demorou muito para responder. Por favor, tente novamente.', false);
+        }
+      } else {
+        const errorMessage = error.message || 'Erro desconhecido ao processar sua mensagem';
+        showNotification(`❌ ${errorMessage}`, 'error', 5000);
+        addMessage(`Desculpe, ocorreu um erro: ${errorMessage}. Tente novamente em alguns instantes.`, false);
+      }
+      
+      conversationHistory.pop();
+    } finally {
+      isWaitingResponse = false;
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+  
+  toggle.addEventListener('click', () => {
+    const username = getCookie('user_field_1_7');
+    
+    if (!username) {
+      showNotification('⚠️ Você precisa estar logado para usar o chatbot!', 'warning', 4000);
+      return;
+    }
+    
+    container.classList.add('show');
+    toggle.style.display = 'none';
+    input.focus();
+    
+    if (messagesDiv.children.length === 0) {
+      addMessage('Olá! Sou a IA da RCC. Como posso ajudá-lo hoje? 😊', false);
+    }
+  });
+  
+  closeBtn.addEventListener('click', () => {
+    container.classList.remove('show');
+    setTimeout(() => {
+      toggle.style.display = 'flex';
+    }, 300);
+  });
+  
+  sendBtn.addEventListener('click', sendMessage);
+  
+  input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+  
+  input.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  });
+  
+  container.addEventListener('click', (e) => {
+    if (e.target === container) {
+      container.classList.remove('show');
+      setTimeout(() => {
+        toggle.style.display = 'flex';
+      }, 300);
+    }
+  });
+  
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && container.classList.contains('show')) {
+      container.classList.remove('show');
+      setTimeout(() => {
+        toggle.style.display = 'flex';
+      }, 300);
+    }
+  });
+  
+  let touchStartY = 0;
+  let touchEndY = 0;
+  
+  messagesDiv.addEventListener('touchstart', (e) => {
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+  
+  messagesDiv.addEventListener('touchend', (e) => {
+    touchEndY = e.changedTouches[0].screenY;
+    handleSwipe();
+  }, { passive: true });
+  
+  function handleSwipe() {
+    if (touchStartY - touchEndY > 50 && messagesDiv.scrollTop === 0) {
+      messagesDiv.scrollTop = 0;
+    }
+  }
+})();
